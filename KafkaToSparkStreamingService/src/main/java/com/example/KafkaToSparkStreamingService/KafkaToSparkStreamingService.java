@@ -48,8 +48,8 @@ public class KafkaToSparkStreamingService {
 
         SparkConf sparkConf = new SparkConf().setAppName("SparkApplication").setMaster("local[*]");
         JavaSparkContext jsc = new JavaSparkContext(sparkConf);
-        //dropTableHbase();
-        streamingFromKafka(jsc);
+        dropTableHbase();
+       streamingFromKafka(jsc);
     }
 
     public static Map<String, Object> getKafkaParams() {
@@ -75,8 +75,10 @@ public class KafkaToSparkStreamingService {
                     ConsumerStrategies.<String, String>Subscribe(topics, getKafkaParams())
             );
             JavaDStream<String> javaDstream = kafkaStream.map(ConsumerRecord::value);
-            JavaDStream<List<Restaurant>> restaurantStream = javaDstream.map(jsonString -> Restaurant.parse(jsonString));
-            JavaDStream<Restaurant> flatRestaurantStream = restaurantStream.flatMap(
+            JavaDStream<List<Restaurant>> restaurantStream = javaDstream
+                    .map(jsonString -> Restaurant.parse(jsonString));
+            JavaDStream<Restaurant> flatRestaurantStream = restaurantStream
+                    .flatMap(
                     restaurantList -> restaurantList.iterator()
             );
             flatRestaurantStream.foreachRDD(restaurantJavaRDD -> {
@@ -101,7 +103,6 @@ public class KafkaToSparkStreamingService {
         repo.dropTableHbase();
 
     }
-
 
 }
 
